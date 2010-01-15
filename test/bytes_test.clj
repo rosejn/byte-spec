@@ -1,8 +1,11 @@
 (ns bytes-test
   (:use 
      clojure.test
-     (overtone bytes util)
+     byte-spec
      test-utils))
+
+(defn bytes-and-back [spec obj]
+  (spec-read-bytes spec (spec-write-bytes spec obj)))
 
 (defspec basic-type-spec
          :a :int8
