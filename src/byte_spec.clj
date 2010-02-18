@@ -1,5 +1,4 @@
 (ns byte-spec
-  (:use overtone.core.util)
   (:import (java.net URL)
      (java.io FileInputStream FileOutputStream 
               DataInputStream DataOutputStream

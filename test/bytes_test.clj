@@ -1,8 +1,7 @@
 (ns bytes-test
   (:use 
      clojure.test
-     byte-spec
-     test-utils))
+     byte-spec))
 
 (defn bytes-and-back [spec obj]
   (spec-read-bytes spec (spec-write-bytes spec obj)))
@@ -31,6 +30,11 @@
          :b [:float32]
          :n-c :int64
          :c [:string])
+
+(defn- floatify
+  "Convert all numbers in col to floats." 
+  [col]
+  (map #(if (number? %1) (float %1) %1) col))
 
 (deftest array-test []
   (let [a {:n-a (byte 4)
