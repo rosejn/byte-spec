@@ -10,22 +10,22 @@ used for many binary file formats, network packets, etc...
 
 First you describe your binary format like this:
 
-  (defspec basic-spec
-           :a :int8
-           :b :int16
-           :c :int32
-           :d :float32
-           :e :float64
-           :f :string)
-  
-  ;; An object to serialize
-  (def foo {:a 10 :b 20 :c 40 :d 23.2 :e 23.2 :f "asddf"})
-  
-  ;; And serialize it to a byte array like this:
-  (spec-write-bytes basic-spec foo) ;; => [...bytes...]
-  
-  ;; reading in a byte array with the basic-spec format works like this:
-  (spec-read-bytes basic-spec bytes)
+    (defspec basic-spec
+             :a :int8
+             :b :int16
+             :c :int32
+             :d :float32
+             :e :float64
+             :f :string)
+    
+    ;; An object to serialize
+    (def foo {:a 10 :b 20 :c 40 :d 23.2 :e 23.2 :f "asddf"})
+    
+    ;; And serialize it to a byte array like this:
+    (spec-write-bytes basic-spec foo) ;; => [...bytes...]
+    
+    ;; reading in a byte array with the basic-spec format works like this:
+    (spec-read-bytes basic-spec bytes)
 
 There is also support for arrays of the basic types and arrays of nested spec
 types.  Take a look at the tests for some more examples, and of course browsing
