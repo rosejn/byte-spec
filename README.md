@@ -39,6 +39,10 @@ Overtone source.  Feel free to email me with questions, comments, or patches.
 
 ### Project Info:
 
+Include in your project.clj like so:
+
+  [overtone/byte-spec "0.1"]
+
 #### Source Repository
 Downloads and the source repository can be found on GitHub:
 
