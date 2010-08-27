@@ -1,10 +1,7 @@
 (ns bytes-test
-  (:use 
+  (:use
      clojure.test
      byte-spec))
-
-(defn bytes-and-back [spec obj]
-  (spec-read-bytes spec (spec-write-bytes spec obj)))
 
 (defspec basic-type-spec
          :a :int8
@@ -32,13 +29,13 @@
          :c [:string])
 
 (defn- floatify
-  "Convert all numbers in col to floats." 
+  "Convert all numbers in col to floats."
   [col]
   (map #(if (number? %1) (float %1) %1) col))
 
 (deftest array-test []
   (let [a {:n-a (byte 4)
-           :a [1 2 3 4] 
+           :a [1 2 3 4]
            :n-b (int 6)
            :b (floatify [3.23 4.3223 53.32 253.2 53.2 656.5])
            :n-c (long 3)
@@ -49,7 +46,7 @@
     (is (= 6 (:n-b b)))
     (is (= 3 (:n-c b)))))
 
-(defspec rhythm-spec 
+(defspec rhythm-spec
          :name :string
          :length :int16
          :n-triggers :int32

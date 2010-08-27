@@ -1,8 +1,8 @@
 (ns byte-spec
   (:import (java.net URL)
-     (java.io FileInputStream FileOutputStream 
+     (java.io FileInputStream FileOutputStream
               DataInputStream DataOutputStream
-              BufferedInputStream BufferedOutputStream 
+              BufferedInputStream BufferedOutputStream
               ByteArrayOutputStream ByteArrayInputStream)))
 
 ; This file implements a DSL for specifying the layout of binary data formats.
@@ -26,7 +26,7 @@
   (.write *spec-out* (.getBytes s)))
 
 ;; Standard numeric types + Pascal style strings.
-;; pstring => a byte giving the string length followed by the ascii bytes 
+;; pstring => a byte giving the string length followed by the ascii bytes
 (def READERS {
               :int8   #(.readByte *spec-in*)
 							:int16  #(.readShort *spec-in*)
@@ -81,7 +81,7 @@
                       (nth specs 2)
                       nil)
             fdefault (coerce-default fdefault ftype)
-            spec {:fname fname 
+            spec {:fname fname
                    :ftype ftype
                    :fdefault fdefault}
             specs (if (nil? fdefault)
@@ -114,8 +114,8 @@
         (recur (dec i) (conj ary next-val)))
       ary)))
 
-(defn spec-read 
-  "Returns an instantiation of the provided spec, with data read from 
+(defn spec-read
+  "Returns an instantiation of the provided spec, with data read from
   a DataInputStream bound to *spec-in*."
   [spec]
   (loop [specs (:specs spec)
@@ -169,11 +169,11 @@
 (defn count-for [fname]
   (keyword (.substring (name fname) 2)))
 
-(defn spec-write 
+(defn spec-write
   "Serializes the data according to spec, writing bytes onto *spec-out*."
   [spec data]
   (doseq [{:keys [fname ftype fdefault]} (:specs spec)]
-    (cond 
+    (cond
       ; count of another field starting with n-
       (.startsWith (name fname) "n-")
       (let [wrt (ftype WRITERS)
@@ -204,4 +204,7 @@
       (binding [*spec-out* out]
         (spec-write spec data)))
     (.toByteArray bos)))
+
+(defn bytes-and-back [spec obj]
+  (spec-read-bytes spec (spec-write-bytes spec obj)))
 
