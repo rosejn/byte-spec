@@ -25,6 +25,11 @@
   (.writeByte *spec-out* (count s))
   (.write *spec-out* (.getBytes s)))
 
+(defn- read-fstring [len]
+  (let [bytes (byte-array len)]
+    (.readFully *spec-in* bytes)
+    (String. bytes)))
+
 ;; Standard numeric types + Pascal style strings.
 ;; pstring => a byte giving the string length followed by the ascii bytes
 (def READERS {
@@ -131,11 +136,14 @@
                    ; sub-spec
                    (map? ftype) (spec-read ftype)
 
-                   ; array
-                   (vector? ftype) (spec-read-array (first ftype)
-                                                    (if (= 2 (count ftype))
-                                                      (second ftype)
-                                                      ((keyword (str "n-" (name fname))) data))))]
+                   ; array or fstring
+                   (vector? ftype)
+                   (if (= :fstring (first ftype))
+                     (read-fstring (second ftype))
+                     (spec-read-array (first ftype)
+                                      (if (= 2 (count ftype))
+                                        (second ftype)
+                                        ((keyword (str "n-" (name fname))) data)))))]
         #_(println (str ftype ": " fname " <- "
                       (if (vector? fval) (str fval) fval)))
         (recur (next specs) (assoc data fname fval)))
