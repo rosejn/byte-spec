@@ -29,38 +29,38 @@
 ;; pstring => a byte giving the string length followed by the ascii bytes
 (def READERS {
               :int8   #(.readByte *spec-in*)
-							:int16  #(.readShort *spec-in*)
-							:int32  #(.readInt *spec-in*)
-							:int64  #(.readLong *spec-in*)
-							:float32  #(.readFloat *spec-in*)
+              :int16  #(.readShort *spec-in*)
+              :int32  #(.readInt *spec-in*)
+              :int64  #(.readLong *spec-in*)
+              :float32  #(.readFloat *spec-in*)
               :float64 #(.readDouble *spec-in*)
 
               :byte   #(.readByte *spec-in*)
-							:short  #(.readShort *spec-in*)
-							:int    #(.readInt *spec-in*)
-							:long   #(.readLong *spec-in*)
-							:float    #(.readFloat *spec-in*)
+              :short  #(.readShort *spec-in*)
+              :int    #(.readInt *spec-in*)
+              :long   #(.readLong *spec-in*)
+              :float    #(.readFloat *spec-in*)
               :double  #(.readDouble *spec-in*)
 
-							:string read-pstring
+              :string read-pstring
               })
 
 (def WRITERS {
               :int8   #(.writeByte *spec-out* %1)
-							:int16  #(.writeShort *spec-out* %1)
-							:int32  #(.writeInt *spec-out*  %1)
-							:int64  #(.writeLong *spec-out*  %1)
+              :int16  #(.writeShort *spec-out* %1)
+              :int32  #(.writeInt *spec-out*  %1)
+              :int64  #(.writeLong *spec-out*  %1)
               :float32 #(.writeFloat *spec-out* %1)
               :float64 #(.writeDouble *spec-out* %1)
 
               :byte   #(.writeByte *spec-out* %1)
-							:short  #(.writeShort *spec-out* %1)
-							:int    #(.writeInt *spec-out*  %1)
-							:long   #(.writeLong *spec-out*  %1)
+              :short  #(.writeShort *spec-out* %1)
+              :int    #(.writeInt *spec-out*  %1)
+              :long   #(.writeLong *spec-out*  %1)
               :float   #(.writeFloat *spec-out* %1)
               :double  #(.writeDouble *spec-out* %1)
 
-							:string write-pstring
+              :string write-pstring
               })
 
 ; TODO: Make this complete
@@ -104,7 +104,7 @@
 (declare spec-read)
 
 (defn- spec-read-array [spec size]
-  ;(println (str "[" (if (map? spec) (:name spec) spec) "] size = " size))
+  ;;(println (str "[" (if (map? spec) (:name spec) spec) "] size = " size))
   (loop [i size
          ary []]
     (if (pos? i)
@@ -120,10 +120,10 @@
   [spec]
   (loop [specs (:specs spec)
          data  {}]
-    ;(println (str "spec-read - " (:name spec)))
+    ;;(println (str "spec-read - " (:name spec)))
     (if specs
       (let [{:keys [fname ftype fdefault]} (first specs)
-            ;_ (println (str ftype ": " fname " default: -" fdefault "-" ))
+            ;;_ (println (str ftype ": " fname " default: -" fdefault "-" ))
             fval (cond
                    ; basic type
                    (contains? READERS ftype) ((ftype READERS))
@@ -133,8 +133,11 @@
 
                    ; array
                    (vector? ftype) (spec-read-array (first ftype)
-                                                    ((keyword (str "n-" (name fname))) data)))]
-        ;(println (str ftype ": " fname " <- " (if (vector? fval) (str "[" (:name (first ftype)) "]") fval)))
+                                                    (if (= 2 (count ftype))
+                                                      (second ftype)
+                                                      ((keyword (str "n-" (name fname))) data))))]
+        #_(println (str ftype ": " fname " <- "
+                      (if (vector? fval) (str fval) fval)))
         (recur (next specs) (assoc data fname fval)))
       data)))
 
