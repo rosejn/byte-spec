@@ -25,47 +25,70 @@
   (.writeByte *spec-out* (count s))
   (.write *spec-out* (.getBytes s)))
 
-(defn- read-fstring [len]
+(defn read-fstring [len]
   (let [bytes (byte-array len)]
     (.readFully *spec-in* bytes)
     (String. bytes)))
 
+(defn- write-fstring [s len]
+  (let [actual (if (<= (count s) len)
+                 (.substring s 0 len)
+                 (apply str s (take (- len (count s)) (repeat " "))))]
+    (.write *spec-out* (.getBytes actual))))
+
+(defn- read-int16-little []
+  (let [b1 (.readUnsignedByte *spec-in*)
+        b2 (bit-shift-left (.readUnsignedByte *spec-in*) 8)]
+    (reduce bit-or [b1 b2])))
+
+(defn- read-int32-little []
+  (let [b1 (.readUnsignedByte *spec-in*)
+        b2 (bit-shift-left (.readUnsignedByte *spec-in*) 8)
+        b3 (bit-shift-left (.readUnsignedByte *spec-in*) 16)
+        b4 (bit-shift-left (.readUnsignedByte *spec-in*) 24)]
+    (reduce bit-or [b1 b2 b3 b4])))
+
+(defn seek-by [offset]
+  (.seek *spec-in* (+ (.getFilePointer *spec-in*) offset)))
+
 ;; Standard numeric types + Pascal style strings.
 ;; pstring => a byte giving the string length followed by the ascii bytes
 (def READERS {
-              :int8   #(.readByte *spec-in*)
-              :int16  #(.readShort *spec-in*)
-              :int32  #(.readInt *spec-in*)
-              :int64  #(.readLong *spec-in*)
-              :float32  #(.readFloat *spec-in*)
+              :int8    #(.readByte *spec-in*)
+              :int16   #(.readShort *spec-in*)
+              :int16-l read-int16-little
+              :int32   #(.readInt *spec-in*)
+              :int32-l read-int32-little
+              :int64   #(.readLong *spec-in*)
+              :float32 #(.readFloat *spec-in*)
               :float64 #(.readDouble *spec-in*)
 
-              :byte   #(.readByte *spec-in*)
-              :short  #(.readShort *spec-in*)
-              :int    #(.readInt *spec-in*)
-              :long   #(.readLong *spec-in*)
-              :float    #(.readFloat *spec-in*)
+              :byte    #(.readByte *spec-in*)
+              :short   #(.readShort *spec-in*)
+              :int     #(.readInt *spec-in*)
+              :long    #(.readLong *spec-in*)
+              :float   #(.readFloat *spec-in*)
               :double  #(.readDouble *spec-in*)
 
-              :string read-pstring
+              :string   read-pstring
               })
 
 (def WRITERS {
-              :int8   #(.writeByte *spec-out* %1)
-              :int16  #(.writeShort *spec-out* %1)
-              :int32  #(.writeInt *spec-out*  %1)
-              :int64  #(.writeLong *spec-out*  %1)
+              :int8    #(.writeByte *spec-out* %1)
+              :int16   #(.writeShort *spec-out* %1)
+              :int32   #(.writeInt *spec-out*  %1)
+              :int64   #(.writeLong *spec-out*  %1)
               :float32 #(.writeFloat *spec-out* %1)
               :float64 #(.writeDouble *spec-out* %1)
 
-              :byte   #(.writeByte *spec-out* %1)
-              :short  #(.writeShort *spec-out* %1)
-              :int    #(.writeInt *spec-out*  %1)
-              :long   #(.writeLong *spec-out*  %1)
+              :byte    #(.writeByte *spec-out* %1)
+              :short   #(.writeShort *spec-out* %1)
+              :int     #(.writeInt *spec-out*  %1)
+              :long    #(.writeLong *spec-out*  %1)
               :float   #(.writeFloat *spec-out* %1)
               :double  #(.writeDouble *spec-out* %1)
 
-              :string write-pstring
+              :string  write-pstring
               })
 
 ; TODO: Make this complete
@@ -130,20 +153,24 @@
       (let [{:keys [fname ftype fdefault]} (first specs)
             ;;_ (println (str ftype ": " fname " default: -" fdefault "-" ))
             fval (cond
-                   ; basic type
+                   ;; basic type
                    (contains? READERS ftype) ((ftype READERS))
 
-                   ; sub-spec
+                   ;; sub-spec
                    (map? ftype) (spec-read ftype)
 
-                   ; array or fstring
+                   ;; array or fstring
                    (vector? ftype)
                    (if (= :fstring (first ftype))
                      (read-fstring (second ftype))
                      (spec-read-array (first ftype)
                                       (if (= 2 (count ftype))
                                         (second ftype)
-                                        ((keyword (str "n-" (name fname))) data)))))]
+                                        ((keyword (str "n-" (name fname))) data))))
+                   
+                   ;; function
+                   (fn? ftype) (ftype)
+                   )]
         #_(println (str ftype ": " fname " <- "
                       (if (vector? fval) (str fval) fval)))
         (recur (next specs) (assoc data fname fval)))
