@@ -41,7 +41,7 @@ Overtone source.  Feel free to email me with questions, comments, or patches.
 
 Include in your project.clj like so:
 
-  [overtone/byte-spec "0.0.2-SNAPSHOT"]
+  [overtone/byte-spec "0.2.0-SNAPSHOT"]
 
 #### Source Repository
 Downloads and the source repository can be found on GitHub:

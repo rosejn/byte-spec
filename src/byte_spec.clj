@@ -9,8 +9,8 @@
 ; Look at synthdef.clj that defines the format for SuperCollider
 ; synthesizer definition (.scsyndef) files for an example of usage.
 
-(def *spec-out* nil)
-(def *spec-in*  nil)
+(def ^{:dynamic true} *spec-out* nil)
+(def ^{:dynamic true} *spec-in*  nil)
 
 (defn- bytes-to-int [bytes]
   (-> bytes (ByteArrayInputStream.) (DataInputStream.) (.readInt)))
@@ -27,41 +27,41 @@
 
 ;; Standard numeric types + Pascal style strings.
 ;; pstring => a byte giving the string length followed by the ascii bytes
-(def READERS {
-              :int8   #(.readByte *spec-in*)
-							:int16  #(.readShort *spec-in*)
-							:int32  #(.readInt *spec-in*)
-							:int64  #(.readLong *spec-in*)
-							:float32  #(.readFloat *spec-in*)
-              :float64 #(.readDouble *spec-in*)
+(def READERS
+  {:int8    #(.readByte *spec-in*)
+   :int16   #(.readShort *spec-in*)
+   :int32   #(.readInt *spec-in*)
+   :int64   #(.readLong *spec-in*)
+   :float32 #(.readFloat *spec-in*)
+   :float64 #(.readDouble *spec-in*)
+   
+   :byte   #(.readByte *spec-in*)
+   :short  #(.readShort *spec-in*)
+   :int    #(.readInt *spec-in*)
+   :long   #(.readLong *spec-in*)
+   :float  #(.readFloat *spec-in*)
+   :double #(.readDouble *spec-in*)
+   
+   :string read-pstring
+   })
 
-              :byte   #(.readByte *spec-in*)
-							:short  #(.readShort *spec-in*)
-							:int    #(.readInt *spec-in*)
-							:long   #(.readLong *spec-in*)
-							:float    #(.readFloat *spec-in*)
-              :double  #(.readDouble *spec-in*)
-
-							:string read-pstring
-              })
-
-(def WRITERS {
-              :int8   #(.writeByte *spec-out* %1)
-							:int16  #(.writeShort *spec-out* %1)
-							:int32  #(.writeInt *spec-out*  %1)
-							:int64  #(.writeLong *spec-out*  %1)
-              :float32 #(.writeFloat *spec-out* %1)
-              :float64 #(.writeDouble *spec-out* %1)
-
-              :byte   #(.writeByte *spec-out* %1)
-							:short  #(.writeShort *spec-out* %1)
-							:int    #(.writeInt *spec-out*  %1)
-							:long   #(.writeLong *spec-out*  %1)
-              :float   #(.writeFloat *spec-out* %1)
-              :double  #(.writeDouble *spec-out* %1)
-
-							:string write-pstring
-              })
+(def WRITERS
+  {:int8    #(.writeByte *spec-out* %1)
+   :int16   #(.writeShort *spec-out* %1)
+   :int32   #(.writeInt *spec-out*  %1)
+   :int64   #(.writeLong *spec-out*  %1)
+   :float32 #(.writeFloat *spec-out* %1)
+   :float64 #(.writeDouble *spec-out* %1)
+   
+   :byte   #(.writeByte *spec-out* %1)
+   :short  #(.writeShort *spec-out* %1)
+   :int    #(.writeInt *spec-out*  %1)
+   :long   #(.writeLong *spec-out*  %1)
+   :float  #(.writeFloat *spec-out* %1)
+   :double #(.writeDouble *spec-out* %1)
+   
+   :string write-pstring
+   })
 
 ; TODO: Make this complete
 ; For now it just does enough to handle SuperCollider oddity
@@ -77,16 +77,16 @@
       (let [fname (first specs)
             ftype (second specs)
             fdefault (if (and (> (count specs) 2)
-                             (not (keyword? (nth specs 2))))
-                      (nth specs 2)
+                              (not (keyword? (nth specs 2))))
+                       (nth specs 2)
                       nil)
             fdefault (coerce-default fdefault ftype)
             spec {:fname fname
                    :ftype ftype
                    :fdefault fdefault}
             specs (if (nil? fdefault)
-                         (next (next specs))
-                         (next (next (next specs))))
+                    (nnext specs)
+                    (nnext (next specs)))
             fields (conj fields spec)]
         ;(println (str "field: " spec))
         (recur specs fields))
